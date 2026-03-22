@@ -3,7 +3,6 @@
 
   <img src='https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54'>
   <img src='https://img.shields.io/badge/JSON-000000?style=for-the-badge&logo=json&logoColor=white'>
-  <img src='https://img.shields.io/badge/License-MIT-green?style=for-the-badge'>
 </div>
 
 <p align="right">Jogo de adivinhação de palavras inspirado no famoso jogo <b>Wordle</b> feito em <b>Python</b>.</p>
