@@ -17,6 +17,7 @@ def digit(msg, fim=0, t=None):
     if fim == 2: print(end=''); return
     print()
 
+
 def val_resp(msg, conj_resp, erro_msg, fim=1, t=None, z=1):
     resp = digit(msg, 1, t).strip().replace(' ', '').upper()
     if z != 1: resp = resp[0]
@@ -26,11 +27,13 @@ def val_resp(msg, conj_resp, erro_msg, fim=1, t=None, z=1):
         if z != 1: resp = resp[0]
     return resp
 
+
 # cores
 RESET  = '\033[0m'
 BOLD   = '\033[1;38;5;15m'
 GREEN  = '\033[1;38;5;108m'
 YELLOW = '\033[1;38;5;220m'
+
 
 # introduzindo o jogador ao jogo
 digit(f'Seja bem vindo ao jogo {BOLD}LETRIMAX{RESET}, você terá {BOLD}6{RESET} chances para advinhar a {BOLD}PALAVRA SECRETA{RESET}, que tem {BOLD}5{RESET} letras. ', 1)
@@ -54,6 +57,7 @@ while True:
             TP = 0.05
             digit('Tá de sacanagem, né?! Escolha um valor menor que 1.5.')
             raise ValueError
+        
         digit('Texto de exemplo')
 
         conf = val_resp('Deseja manter nessa velocidade? [S/N] ', ['S', 'N'], 'Resposta inválida, tente novamente. ', t=0.05, z=0)
@@ -131,7 +135,7 @@ while True:
         acertou = False
         digit(f'Suas tentativas acabaram.\nA {BOLD}PALAVRA SECRETA{RESET} era {BOLD}{pcerta}{RESET} ', 1)
     
-    txt_json.append({'Palavra': pcerta, 'Tentativas': m, 'Acertou': acertou})
+    txt_json.append({'palavra': pcerta, 'tentativas': m, 'acertou': acertou})
 
     if acertou: placar['Vitórias'] += 1
     else: placar['Derrotas'] += 1
@@ -151,12 +155,12 @@ if json == 'S':
     if path.exists('historico_letrimax.json'):
         contador = 1
         while True:
-            if not path.exists(f'historico_letrimax({contador}).json'):
-                nome_arquivo = f'historico_letrimax({contador}).json'
+            if not path.exists(f'historico_letrimax_{contador}.json'):
+                nome_arquivo = f'historico_letrimax_{contador}.json'
                 break
             contador += 1
         
         with open(nome_arquivo, 'w', encoding='utf-8') as arquivo:
-            dump(txt_json, arquivo, ensure_ascii=False, indent=4)
+            dump(txt_json, arquivo)
 
 digit(f'\nObrigado por ter jogado {BOLD}LETRIMAX{RESET}!')
