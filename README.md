@@ -5,9 +5,7 @@
   <img src="https://img.shields.io/badge/JSON-000000?style=for-the-badge&logo=json&logoColor=white">
 </div>
 
-<p align="right">
-Jogo de adivinhação de palavras inspirado no famoso jogo <b>Wordle</b> feito em <b>Python</b>.
-</p>
+<p align="right">Jogo de adivinhação de palavras inspirado no famoso jogo <b>Wordle</b> feito em <b>Python</b>.</p>
 
 ## 📝 Descrição
 
