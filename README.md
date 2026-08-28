@@ -28,6 +28,29 @@ O objetivo do jogo é descobrir a **palavra secreta de 5 letras** em até **6 te
 - Biblioteca `unidecode`
 - Certifique-se de que o arquivo `br-utf8.txt` está na mesma pasta que o `main.py` (lamento a falta de palavras, estou buscando outra forma de inserir as palavras no jogo. Caso tenha alguma sugestão, por favor me ajude, **deixe uma issue**)
 
+## Instalação
+
+Clone o repositório
+
+```bash
+git clone https://github.com/davi-furtado/LETRIMAX.git
+cd LETRIMAX
+```
+
+E então
+
+```bash
+uv sync
+uv run main.py
+```
+
+Ou com pip
+
+```bash
+pip install Unidecode
+python main.py
+```
+
 ---
 
 ## Referência

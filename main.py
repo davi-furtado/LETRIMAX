@@ -4,12 +4,13 @@ from unidecode import unidecode
 from random import choice
 from os import path
 from json import dump
+from typing import Sequence
 
 # criação de utilitários
 TP = 0.05  # tempo de digitação padrão
 
 
-def digit(msg, fim=0, t=None):
+def digit(msg: str, fim: int = 0, t: int | float | None = None) -> str:
     if t is None:
         t = TP
     for l in msg:
@@ -24,7 +25,14 @@ def digit(msg, fim=0, t=None):
     return ""
 
 
-def val_resp(msg, conj_resp, erro_msg, fim=1, t=None, z=1):
+def val_resp(
+    msg: str,
+    conj_resp: Sequence[str],
+    erro_msg: str,
+    fim: int = 1,
+    t: int | float | None = None,
+    z: int = 1,
+) -> str:
     resp = digit(msg, 1, t).strip().replace(" ", "").upper()
     if z != 1:
         resp = resp[0]

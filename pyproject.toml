@@ -1,0 +1,10 @@
+[project]
+name = "letrimax"
+version = "1.0.0"
+description = "Jogo de adivinhação de palavras inspirado no famoso jogo Wordle"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.13"
+dependencies = [
+    "unidecode>=1.4.0",
+]
