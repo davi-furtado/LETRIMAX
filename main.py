@@ -1,239 +1,296 @@
-# importando as bibliotecas necessárias
+# Importando as bibliotecas necessárias
 from time import sleep
 from unidecode import unidecode
 from random import choice
 from os import path
 from json import dump
 from typing import Sequence
+from rich import print as rprint
+from enum import Enum
 
-# criação de utilitários
-TP = 0.05  # tempo de digitação padrão
+# Criação de utilitários
+TEMPO_PADRAO = 0.05  # Tempo de digitação padrão
 
 
-def digit(msg: str, fim: int = 0, t: int | float | None = None) -> str:
-    if t is None:
-        t = TP
-    for l in msg:
-        print(l, end="", flush=True)
-        sleep(t)
-    if fim == 1:
+class TipoFim(Enum):
+    NOVA_LINHA = 0
+    VAZIO = 1
+    INPUT = 2
+
+
+def digitar(
+    mensagem: str,
+    /,
+    tipo_fim: TipoFim = TipoFim.NOVA_LINHA,
+    tempo: int | float | None = None,
+) -> str:
+    if tempo is None:
+        tempo = TEMPO_PADRAO
+
+    for letra in mensagem:
+        rprint(letra, end="", flush=True)
+        sleep(tempo)
+    if tipo_fim == TipoFim.INPUT:
         return input()
-    if fim == 2:
+    if tipo_fim == TipoFim.VAZIO:
         print(end="")
-        return ""
-    print()
+    else:
+        print()
     return ""
 
 
-def val_resp(
-    msg: str,
-    conj_resp: Sequence[str],
-    erro_msg: str,
-    fim: int = 1,
-    t: int | float | None = None,
-    z: int = 1,
+def validar_resposta(
+    mensagem: str,
+    conjunto_resposta: Sequence[str],
+    mensagem_erro: str,
+    /,
+    tipo_fim: TipoFim = TipoFim.NOVA_LINHA,
+    tempo: int | float | None = None,
+    num_caracteres: int = -1,
 ) -> str:
-    resp = digit(msg, 1, t).strip().replace(" ", "").upper()
-    if z != 1:
-        resp = resp[0]
-    while resp not in conj_resp:
-        digit(erro_msg, fim)
-        resp = digit(msg, 1, t).strip().replace(" ", "").upper()
-        if z != 1:
-            resp = resp[0]
-    return resp
+    respostas_validas = [
+        unidecode(resposta).replace(" ", "").upper() for resposta in conjunto_resposta
+    ]
+
+    while True:
+        resposta = digitar(
+            mensagem,
+            tipo_fim=TipoFim.INPUT,
+            tempo=tempo,
+        ).strip()
+        resposta = unidecode(resposta).replace(" ", "").upper()
+        if num_caracteres > 0:
+            resposta = resposta[:num_caracteres]
+        if resposta in respostas_validas:
+            return resposta
+        digitar(mensagem_erro, tipo_fim, tempo)
 
 
-# cores
-RESET = "\033[0m"
-BOLD = "\033[1;38;5;15m"
-GREEN = "\033[1;38;5;108m"
-YELLOW = "\033[1;38;5;220m"
-
-
-# introduzindo o jogador ao jogo
-digit(
-    f"Seja bem vindo ao jogo {BOLD}LETRIMAX{RESET}, você terá {BOLD}6{RESET} chances para advinhar a {BOLD}PALAVRA SECRETA{RESET}, que tem {BOLD}5{RESET} letras. ",
-    1,
+# Introduzindo o jogador ao jogo
+digitar(
+    "Seja bem vindo ao jogo [bold]LETRIMAX[/], você terá "
+    "[bold]6[/] chances para adivinhar a [bold]PALAVRA SECRETA[/], "
+    "que tem [bold]5[/] letras.",
+    TipoFim.VAZIO,
 )
-digit(
-    f"A cada palavra digitada você verá sua palavra novamente, mas algumas letras estarão pintadas.\n{GREEN}C A{RESET} {BOLD}U {YELLOW}S A{RESET}"
-)
-digit(
-    f"No exemplo anterior, o {BOLD}C{RESET} e o {BOLD}A{RESET} estão na palavra e na posição correta, pois estão na cor verde.\nAs letras {BOLD}S{RESET} e {BOLD}A{RESET} estão na posição errada, mas estão na palavra.\nE a letra {BOLD}U{RESET} não está na palavra. ",
-    1,
-)
-digit(f"{GREEN}C A M A S{RESET}\nNesse caso, a palavra foi descoberta.")
-digit("Já vou avisando, parece simples, mas não é. ", 1)
 
-# escolha da velocidade de digitação
-digit("Mas antes de começar... ", 2)
+digitar(
+    "A cada palavra digitada você verá sua palavra novamente, "
+    "mas algumas letras estarão pintadas.\n"
+    "[green]C A[/] [bold]U[/] [yellow]S A[/]"
+)
+
+digitar(
+    "No exemplo anterior, o [bold]C[/] e o primeiro [bold]A[/] "
+    "estão na palavra e na posição correta, pois estão na cor verde.\n"
+    "As letras [bold]S[/] e o outro [bold]A[/] estão na posição errada, "
+    "mas estão na palavra.\n"
+    "E a letra [bold]U[/] não está na palavra.",
+    TipoFim.INPUT,
+)
+
+digitar("[green]C A M A S[/]\nNesse caso, a palavra foi descoberta.")
+
+digitar("Já vou avisando, parece simples, mas não é.", TipoFim.INPUT)
+
+# Escolha da velocidade de digitação
 while True:
     try:
         ent = (
-            digit("Digite a velocidade da escrita em segundos (padrão = 0.05): ", 1)
+            digitar(
+                "Digite a velocidade da escrita em segundos (padrão = 0.05): ",
+                TipoFim.INPUT,
+            )
             .replace(" ", "")
             .replace(",", ".")
         )
+
         if ent != "":
-            TP = float(ent)
-        if TP < 0:
-            TP = 0.05
-            digit("Erro! Sua entrada não pode ser menor que 0.")
-            raise ValueError
-        elif TP >= 1.5:
-            TP = 0.05
-            digit("Tá de sacanagem, né?! Escolha um valor menor que 1.5.")
-            raise ValueError
+            TEMPO_PADRAO = float(ent)
+        if TEMPO_PADRAO < 0:
+            digitar("Erro! Sua entrada não pode ser menor que 0.")
+            continue
+        if TEMPO_PADRAO >= 1.5:
+            digitar("Tá de sacanagem, né?! Escolha um valor menor que 1.5.")
+            continue
 
-        digit("Texto de exemplo")
-
-        conf = val_resp(
+        digitar("Texto de exemplo")
+        conf = validar_resposta(
             "Deseja manter nessa velocidade? [S/N] ",
             ["S", "N"],
-            "Resposta inválida, tente novamente. ",
-            t=0.05,
-            z=0,
+            "Resposta inválida, tente novamente.",
+            tempo=0.05,
+            num_caracteres=1,
         )
-        if conf == "N":
-            continue
-        break
-    except Exception:
-        digit("Tente novamente. ", 2)
+        if conf == "S":
+            break
+    except ValueError:
+        digitar("Tente novamente.")
 
-digit("\nAperte enter para começar ", 1)
-digit("")
+digitar("\nAperte enter para começar ", TipoFim.INPUT)
 
-# importando lista de todas as palavras com 5 letras da lingua portuguesa
+# Importando lista de todas as palavras com 5 letras da língua portuguesa
 palavras = []
+
 try:
     with open("br-utf8.txt", encoding="utf-8") as txt:
         for linha in txt:
             palavra = linha.strip().upper()
             if len(palavra) == 5 and palavra.isalpha():
                 palavras.append(palavra)
-except Exception:
-    digit(
-        'Erro: verifique se o arquivo "br-utf8.txt" está na mesma pasta que o programa.'
+except FileNotFoundError:
+    digitar(
+        'Erro: verifique se o arquivo "br-utf8.txt" '
+        "está na mesma pasta que o programa."
     )
-    exit()
+    raise SystemExit
 
 backup_palavras = palavras.copy()
 txt_json = []
 
-placar = {"Vitórias": 0, "Derrotas": 0}
+placar = {
+    "Vitórias": 0,
+    "Derrotas": 0,
+}
+
 while True:
-    if len(palavras) == 0:
-        digit("Infelizmente as palavras acabaram. ", 2)
-        reinit = val_resp(
+    if not palavras:
+        digitar("Infelizmente as palavras acabaram.")
+        reinit = validar_resposta(
             "Deseja reiniciar o jogo? [S/N] ",
             ["S", "N"],
-            "Resposta inválida, tente novamente. ",
-            2,
-            z=0,
+            "Resposta inválida, tente novamente.",
+            num_caracteres=1,
         )
         if reinit == "S":
-            palavras = backup_palavras
+            palavras = backup_palavras.copy()
         else:
             break
 
+    # Escolhe a palavra secreta
     pcerta = choice(palavras)
-    certa = unidecode(pcerta)
+    certa = unidecode(pcerta).upper()
     palavras.remove(pcerta)
-    m = 1
-    while m <= 6:
-        usu = unidecode(
-            val_resp(
-                f"{m}/6 - ", palavras, f"Palavra não identificada, tente novamente. ", 2
-            )
-        )
-        resultado = [RESET] * 5
-        letras_usadas = [False] * 5
-        m += 1
 
-        # letras corretas em posições corretas
+    acertou = False
+    tentativas = 0
+
+    while tentativas < 6:
+        tentativas += 1
+        usu = unidecode(
+            validar_resposta(
+                f"{tentativas}/6 - ",
+                backup_palavras,  # CORRIGIDO: Usa a lista intacta para não rejeitar a palavra sorteada
+                "Palavra não identificada, tente novamente.",
+                num_caracteres=5,
+            )
+        ).upper()
+
+        # Resultado visual das letras
+        resultado = [""] * 5
+        # Controla quais letras da palavra secreta já foram utilizadas
+        letras_usadas = [False] * 5
+
+        # Letras corretas nas posições corretas
         for i in range(5):
             if usu[i] == certa[i]:
-                resultado[i] = GREEN
+                resultado[i] = "[green]"
                 letras_usadas[i] = True
 
-        # estão na palavra, mas em posições diferentes
+        # Letras presentes, mas nas posições erradas
         for i in range(5):
-            if resultado[i] == GREEN:
+            if resultado[i] == "[green]":
                 continue
             for j in range(5):
                 if not letras_usadas[j] and usu[i] == certa[j]:
-                    resultado[i] = YELLOW
+                    resultado[i] = "[yellow]"
                     letras_usadas[j] = True
                     break
 
-        # mostra a palavra corrogida
+        # Mostra a palavra colorida
         for i in range(5):
-            if i < 4:
-                print(resultado[i] + usu[i], end=" ")
+            cor = resultado[i]
+            if cor:
+                rprint(f"{cor}{usu[i]}[/]", end="")
             else:
-                print(resultado[i] + usu[i], end=f"{RESET}\n", flush=True)
-            sleep(TP)
+                rprint(usu[i], end="")
+            if i < 4:
+                print(end=" ")
+            sleep(TEMPO_PADRAO)
+        print()
 
         if usu == certa:
             acertou = True
-            digit(
-                f"Você acertou a {BOLD}PALAVRA SECRETA{RESET}! {BOLD}{pcerta}{RESET}", 1
-            )
+            digitar(f"Você acertou a [bold]PALAVRA SECRETA[/]! " f"[bold]{pcerta}[/]")
             break
-    else:
-        acertou = False
-        digit(
-            f"Suas tentativas acabaram.\nA {BOLD}PALAVRA SECRETA{RESET} era {BOLD}{pcerta}{RESET} ",
-            1,
+
+    if not acertou:
+        digitar(
+            "Suas tentativas acabaram.\n"
+            f"A [bold]PALAVRA SECRETA[/] era [bold]{pcerta}[/]"
         )
 
-    txt_json.append({"palavra": pcerta, "tentativas": m, "acertou": acertou})
+    # Salva o histórico da partida
+    txt_json.append(
+        {
+            "palavra": pcerta,
+            "tentativas": tentativas,
+            "acertou": acertou,
+        }
+    )
 
+    # Atualiza o placar
     if acertou:
         placar["Vitórias"] += 1
     else:
         placar["Derrotas"] += 1
-    mostrar_placar = val_resp(
+
+    mostrar_placar = validar_resposta(
         "Quer ver seu placar? [S/N] ",
         ["S", "N"],
-        "Resposta inválida, tente novamente. ",
-        2,
-        z=0,
+        "Resposta inválida, tente novamente.",
+        num_caracteres=1,
     )
+
     if mostrar_placar == "S":
-        for key, value in placar.items():
-            digit(f"{key}: {value}")
+        for chave, valor in placar.items():
+            digitar(f"{chave}: {valor}")
     print()
 
-    continuar = val_resp(
+    continuar = validar_resposta(
         "Quer jogar mais uma vez? [S/N] ",
         ["S", "N"],
-        "Resposta inválida, tente novamente. ",
-        2,
-        z=0,
+        "Resposta inválida, tente novamente.",
+        num_caracteres=1,
     )
+
     if continuar == "N":
         break
 
+# Adiciona o placar ao início do histórico
 txt_json.insert(0, placar)
-json = val_resp(
+
+salvar_json = validar_resposta(
     "Quer salvar o histórico do jogo em um arquivo .json? [S/N] ",
     ["S", "N"],
-    "Resposta inválida, tente novamente. ",
-    2,
-    z=0,
+    "Resposta inválida, tente novamente.",
+    num_caracteres=1,
 )
-if json == "S":
-    if path.exists("historico_letrimax.json"):
-        contador = 1
-        while True:
-            if not path.exists(f"historico_letrimax_{contador}.json"):
-                nome_arquivo = f"historico_letrimax_{contador}.json"
-                break
-            contador += 1
 
-        with open(nome_arquivo, "w", encoding="utf-8") as arquivo:
-            dump(txt_json, arquivo)
+if salvar_json == "S":
+    nome_arquivo = "historico_letrimax.json"
+    contador = 1
+    while path.exists(nome_arquivo):
+        nome_arquivo = f"historico_letrimax_{contador}.json"
+        contador += 1
 
-digit(f"\nObrigado por ter jogado {BOLD}LETRIMAX{RESET}!")
+    with open(nome_arquivo, "w", encoding="utf-8") as arquivo:
+        dump(
+            txt_json,
+            arquivo,
+            ensure_ascii=False,
+            indent=4,
+        )
+    digitar(f"Histórico salvo em [bold]{nome_arquivo}[/].")
+
+digitar("\nObrigado por ter jogado [bold]LETRIMAX[/]!")
